@@ -1,5 +1,6 @@
 const express = require("express");
 require("dotenv").config();
+const { MongoClient, ServerApiVersion } = require("mongodb");
 const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 3040;
@@ -8,6 +9,42 @@ const port = process.env.PORT || 3040;
 app.use(cors());
 app.use(express.json());
 
+// mongodb url
+const uri = process.env.MONGODB_URL;
+
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
+
+async function run() {
+  try {
+    await client.connect();
+
+    const db = client.db("ideaVault");
+    const ideasCollection = db.collection("ideas");
+
+    // "/ideas"
+    app.get("/ideas", async (req, res) => {
+      const cursor = ideasCollection.find();
+
+      const result = await cursor.toArray();
+      res.json(result);
+    });
+
+    await client.db("admin").command({ ping: 1 });
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!",
+    );
+  } finally {
+    // await client.close();
+  }
+}
+run().catch(console.dir);
+
 app.get("/", (req, res) => {
   res.send("Server is running without error...");
 });
@@ -15,3 +52,6 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on Port : ${port}`);
 });
+
+// IdeaVault
+//gichl0wCwvtQcOih
