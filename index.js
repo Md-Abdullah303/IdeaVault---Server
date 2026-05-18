@@ -34,6 +34,12 @@ async function run() {
       const result = await cursor.toArray();
       res.json(result);
     });
+    app.get("/featured", async (req, res) => {
+      const cursor = ideasCollection.find().limit(6);
+
+      const result = await cursor.toArray();
+      res.json(result);
+    });
 
     app.get("/ideas/:ideasId", async (req, res) => {
       const { ideasId } = req.params;
