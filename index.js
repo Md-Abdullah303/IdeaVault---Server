@@ -86,11 +86,21 @@ async function run() {
       // console.log("userId and result: ", result, userId);
       res.json(result);
     });
+    app.get("/comment", async (req, res) => {
+      const result = await commentCollection.find().toArray();
+      res.json(result);
+    });
     app.get("/comment/:postId", async (req, res) => {
       const { postId } = req.params;
       const cursor = commentCollection.find({
         postId: postId,
       });
+      const result = await cursor.toArray();
+      res.json(result);
+    });
+    app.get("/comment/user/:userId", async (req, res) => {
+      const { userId } = req.params;
+      const cursor = commentCollection.find({ userId: userId });
       const result = await cursor.toArray();
       res.json(result);
     });
