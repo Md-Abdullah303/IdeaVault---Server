@@ -79,6 +79,12 @@ async function run() {
       });
       res.json(result);
     });
+    app.get("/my-ideas/:userId", async (req, res) => {
+      // const { userId } = req.params;
+      const result = await ideasCollection.find({ userId: userId }).toArray();
+      // console.log("userId and result: ", result, userId);
+      res.json(result);
+    });
 
     // post
     app.post("/ideas", async (req, res) => {
