@@ -27,10 +27,41 @@ async function run() {
     const db = client.db("ideaVault");
     const ideasCollection = db.collection("ideas");
 
-    // "/ideas"
+    // get
     app.get("/ideas", async (req, res) => {
-      const cursor = ideasCollection.find();
+      const { search, filter, shorting } = req.query;
+      // console.log(query);
 
+      let query = {};
+      let shortingOptions = {};
+
+      if (search) {
+        query.title = {
+          $regex: search,
+          $options: "i",
+        };
+      }
+
+      if (filter) {
+        query.category = {
+          $regex: filter,
+          $options: "i",
+        };
+      }
+
+      // shorting
+      if (shorting === "highToLow") {
+        shortingOptions = {
+          estimatedBudget: -1,
+        };
+      }
+      if (shorting === "lowToHigh") {
+        shortingOptions = {
+          estimatedBudget: 1,
+        };
+      }
+
+      const cursor = ideasCollection.find(query).sort(shortingOptions);
       const result = await cursor.toArray();
       res.json(result);
     });
@@ -40,7 +71,6 @@ async function run() {
       const result = await cursor.toArray();
       res.json(result);
     });
-
     app.get("/ideas/:ideasId", async (req, res) => {
       const { ideasId } = req.params;
       //   console.log(ideasId);
@@ -50,6 +80,7 @@ async function run() {
       res.json(result);
     });
 
+    // post
     app.post("/ideas", async (req, res) => {
       const newIdeas = req.body;
       //   console.log(newIdeas);
