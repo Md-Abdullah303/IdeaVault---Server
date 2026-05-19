@@ -86,6 +86,14 @@ async function run() {
       // console.log("userId and result: ", result, userId);
       res.json(result);
     });
+    app.get("/comment/:postId", async (req, res) => {
+      const { postId } = req.params;
+      const cursor = commentCollection.find({
+        postId: postId,
+      });
+      const result = await cursor.toArray();
+      res.json(result);
+    });
 
     // post
     app.post("/ideas", async (req, res) => {
