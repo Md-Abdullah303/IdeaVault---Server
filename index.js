@@ -118,6 +118,27 @@ async function run() {
       res.json(result);
     });
 
+    // patch
+    app.patch("/ideas/:ideasId", async (req, res) => {
+      const { ideasId } = req.params;
+
+      if (!ObjectId.isValid(ideasId)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+
+      const updateIdeas = req.body;
+
+      console.log("ideasId and updeted Data: ", ideasId, updateIdeas);
+      const result = await ideasCollection.updateOne(
+        {
+          _id: new ObjectId(ideasId),
+        },
+        { $set: updateIdeas },
+      );
+
+      res.json(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
