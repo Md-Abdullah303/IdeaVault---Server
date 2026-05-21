@@ -31,6 +31,7 @@ const verifyToken = async (req, res, next) => {
     return res.status(401).json({ message: "Unauthorized login with browser" });
   }
   const token = authorization.split(" ")[1];
+  console.log("token", token);
   if (!token) {
     return res.status(401).json({ message: "Unauthorized" });
   }
@@ -45,7 +46,7 @@ const verifyToken = async (req, res, next) => {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
 
     const db = client.db("ideaVault");
     const ideasCollection = db.collection("ideas");
@@ -53,7 +54,7 @@ async function run() {
 
     // get
     app.get("/ideas", async (req, res) => {
-      const { search, filter, shorting } = req.query;
+      const { search, filter, shorting, posting } = req.query;
       // console.log(query);
 
       let query = {};
@@ -85,6 +86,22 @@ async function run() {
         };
       }
 
+      // posting
+      if (posting === "NewToOld") {
+        shortingOptions = {
+          postedDate: -1,
+        };
+      }
+      if (posting === "OldToNew") {
+        shortingOptions = {
+          postedDate: 1,
+        };
+      }
+
+      console.log(req.query);
+      console.log("posting:", posting);
+      console.log("sort:", shortingOptions);
+
       const cursor = ideasCollection.find(query).sort(shortingOptions);
       const result = await cursor.toArray();
       res.json(result);
@@ -109,7 +126,7 @@ async function run() {
       // console.log("userId and result: ", result, userId);
       res.json(result);
     });
-    app.get("/comment", async (req, res) => {
+    app.get("/comment", verifyToken, async (req, res) => {
       const result = await commentCollection.find().toArray();
       res.json(result);
     });
@@ -162,6 +179,20 @@ async function run() {
       res.json(result);
     });
 
+    app.patch("/comment/:commentId", verifyToken, async (req, res) => {
+      const { commentId } = req.params;
+      const updateComment = req.body;
+      console.log("comment Id and update data", commentId, updateComment);
+      const result = await commentCollection.updateOne(
+        {
+          _id: new ObjectId(commentId),
+        },
+        { $set: updateComment },
+      );
+      console.log(result);
+      res.json(result);
+    });
+
     // delete
     app.delete("/ideas/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
@@ -170,7 +201,16 @@ async function run() {
       res.json(result);
     });
 
-    await client.db("admin").command({ ping: 1 });
+    app.delete("/comment/:commentId", verifyToken, async (req, res) => {
+      const { commentId } = req.params;
+      const result = await commentCollection.deleteOne({
+        _id: new ObjectId(commentId),
+      });
+
+      res.json(result);
+    });
+
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
     );
