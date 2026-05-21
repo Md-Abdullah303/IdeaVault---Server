@@ -31,13 +31,13 @@ const verifyToken = async (req, res, next) => {
     return res.status(401).json({ message: "Unauthorized login with browser" });
   }
   const token = authorization.split(" ")[1];
-  console.log("token", token);
+  // console.log("token", token);
   if (!token) {
     return res.status(401).json({ message: "Unauthorized" });
   }
   try {
     const { payload } = await jwtVerify(token, JWKS);
-    console.log(payload);
+    // console.log(payload);
     next();
   } catch (error) {
     return res.status(403).json({ message: "Forbidden" });
@@ -58,7 +58,9 @@ async function run() {
       // console.log(query);
 
       let query = {};
-      let shortingOptions = {};
+      let shortingOptions = {
+        postedDate: -1,
+      };
 
       if (search) {
         query.title = {
@@ -97,10 +99,6 @@ async function run() {
           postedDate: 1,
         };
       }
-
-      console.log(req.query);
-      console.log("posting:", posting);
-      console.log("sort:", shortingOptions);
 
       const cursor = ideasCollection.find(query).sort(shortingOptions);
       const result = await cursor.toArray();
@@ -168,7 +166,7 @@ async function run() {
 
       const updateIdeas = req.body;
 
-      console.log("ideasId and updeted Data: ", ideasId, updateIdeas);
+      // console.log("ideasId and updeted Data: ", ideasId, updateIdeas);
       const result = await ideasCollection.updateOne(
         {
           _id: new ObjectId(ideasId),
@@ -182,14 +180,14 @@ async function run() {
     app.patch("/comment/:commentId", verifyToken, async (req, res) => {
       const { commentId } = req.params;
       const updateComment = req.body;
-      console.log("comment Id and update data", commentId, updateComment);
+      // console.log("comment Id and update data", commentId, updateComment);
       const result = await commentCollection.updateOne(
         {
           _id: new ObjectId(commentId),
         },
         { $set: updateComment },
       );
-      console.log(result);
+      // console.log(result);
       res.json(result);
     });
 
