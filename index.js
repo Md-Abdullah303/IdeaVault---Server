@@ -227,6 +227,3 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on Port : ${port}`);
 });
-
-// IdeaVault
-//gichl0wCwvtQcOih
